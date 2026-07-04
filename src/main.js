@@ -1,6 +1,7 @@
 const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest";
 const SCOPES = "https://www.googleapis.com/auth/drive.appdata";
 const APP_FILE_NAME = "daily-data.json";
+const DAYS_SINCE_KEY = "days_since_date";
 
 const logEl = document.getElementById("log");
 const clientIdEl = document.getElementById("clientId");
@@ -81,7 +82,7 @@ async function initGoogleApis() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: clientId,
     scope: SCOPES,
-    callback: (resp) => {
+    callback: async (resp) => {
       if (resp.error) {
         log(`Erreur OAuth: ${resp.error}`);
         return;
@@ -89,6 +90,11 @@ async function initGoogleApis() {
       accessToken = resp.access_token;
       gapi.client.setToken({ access_token: accessToken });
       log("Connecté à Google Drive.");
+      try {
+        await syncDaysSinceFromDrive();
+      } catch (e) {
+        log(`Sync date (post-login) erreur: ${e.message}`);
+      }
     }
   });
 }
@@ -109,6 +115,10 @@ function logout() {
   accessToken = null;
   gapi.client.setToken(null);
   log("Déconnecté.");
+}
+
+function isAuthenticated() {
+  return Boolean(accessToken);
 }
 
 async function findAppFile() {
@@ -241,7 +251,7 @@ function renderDaysSince() {
 }
 
 function loadDaysSinceFromLocal() {
-  const savedDate = localStorage.getItem("days_since_date");
+  const savedDate = localStorage.getItem(DAYS_SINCE_KEY);
   if (savedDate) {
     sinceDateEl.value = savedDate;
   } else {
@@ -251,15 +261,62 @@ function loadDaysSinceFromLocal() {
   renderDaysSince();
 }
 
-function saveDaysSinceToLocal() {
+function saveDaysSinceToLocalOnly() {
   const v = sinceDateEl.value;
   if (!v) {
     log("Date requise pour la sous-app.");
+    return false;
+  }
+  localStorage.setItem(DAYS_SINCE_KEY, v);
+  renderDaysSince();
+  return true;
+}
+
+async function saveDaysSince() {
+  const ok = saveDaysSinceToLocalOnly();
+  if (!ok) return;
+
+  if (!isAuthenticated()) {
+    log("Date sauvegardée en local (non connecté à Google).");
     return;
   }
-  localStorage.setItem("days_since_date", v);
-  renderDaysSince();
-  log("Date sauvegardée en local pour la sous-app.");
+
+  try {
+    const current = (await downloadAppData()) || {};
+    current[DAYS_SINCE_KEY] = {
+      value: sinceDateEl.value,
+      updatedAt: new Date().toISOString()
+    };
+    await uploadAppData(current);
+    log("Date sauvegardée en local + Drive.");
+  } catch (e) {
+    log(`Sauvegarde date Drive erreur: ${e.message}`);
+  }
+}
+
+async function syncDaysSinceFromDrive() {
+  if (!isAuthenticated()) return;
+
+  const current = (await downloadAppData()) || {};
+  const remote = current[DAYS_SINCE_KEY];
+
+  if (remote && typeof remote.value === "string" && remote.value) {
+    sinceDateEl.value = remote.value;
+    localStorage.setItem(DAYS_SINCE_KEY, remote.value);
+    renderDaysSince();
+    log("Date synchronisée depuis Drive.");
+    return;
+  }
+
+  const local = localStorage.getItem(DAYS_SINCE_KEY);
+  if (local) {
+    current[DAYS_SINCE_KEY] = {
+      value: local,
+      updatedAt: new Date().toISOString()
+    };
+    await uploadAppData(current);
+    log("Aucune date distante: date locale poussée vers Drive.");
+  }
 }
 
 async function bootstrap() {
@@ -307,7 +364,9 @@ async function bootstrap() {
   backHomeFromDaysBtn.addEventListener("click", () => showView("home"));
   backHomeFromTechBtn.addEventListener("click", () => showView("home"));
 
-  saveDateBtn.addEventListener("click", saveDaysSinceToLocal);
+  saveDateBtn.addEventListener("click", async () => {
+    await saveDaysSince();
+  });
   calcDaysBtn.addEventListener("click", renderDaysSince);
   sinceDateEl.addEventListener("change", renderDaysSince);
 
