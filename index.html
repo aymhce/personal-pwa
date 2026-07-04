@@ -67,6 +67,25 @@
         font-size: 12px;
         word-break: break-all;
       }
+      .hidden {
+        display: none !important;
+      }
+      .apps-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .app-item {
+        border: 1px solid #334155;
+        background: #0b1220;
+        border-radius: 10px;
+        padding: 10px;
+      }
+      .result {
+        font-size: 24px;
+        font-weight: 700;
+        margin-top: 8px;
+      }
     </style>
   </head>
   <body>
@@ -78,13 +97,43 @@
         <p class="muted">
           Renseigne ton Client ID OAuth Web (Google Cloud Console).
         </p>
-        <input id="clientId" placeholder="Google OAuth Client ID" />
+        <input
+          id="clientId"
+          placeholder="Google OAuth Client ID"
+          value="559299748168-de1oiaaomtetkua9gh2iktv7c7f04ug3.apps.googleusercontent.com"
+        />
         <div class="row">
           <button id="saveConfig" class="secondary">Sauver config locale</button>
           <button id="loginBtn">Se connecter à Google</button>
         </div>
         <button id="logoutBtn" class="secondary">Se déconnecter</button>
         <p class="muted">Scope utilisé: <code>https://www.googleapis.com/auth/drive.appdata</code></p>
+      </section>
+
+      <section id="homeView" class="card">
+        <h2>Accueil</h2>
+        <p class="muted">Choisis une sous-app :</p>
+        <div class="apps-list">
+          <div class="app-item">
+            <strong>1) Jours depuis une date</strong>
+            <p class="muted">Stocke une date modifiable et calcule les jours passés.</p>
+            <button id="openDaysSinceBtn">Ouvrir</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="daysSinceView" class="card hidden">
+        <div class="row">
+          <button id="backHomeBtn" class="secondary">← Retour accueil</button>
+        </div>
+        <h2>Sous-app: Jours depuis une date</h2>
+        <p class="muted">Choisis une date de départ :</p>
+        <input id="sinceDate" type="date" />
+        <div class="row">
+          <button id="saveDateBtn">Sauver la date</button>
+          <button id="calcDaysBtn" class="secondary">Recalculer</button>
+        </div>
+        <p id="daysResult" class="result">0 jour</p>
       </section>
 
       <section class="card">

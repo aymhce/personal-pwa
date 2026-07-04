@@ -13,6 +13,15 @@ const logoutBtn = document.getElementById("logoutBtn");
 const saveBtn = document.getElementById("saveBtn");
 const loadBtn = document.getElementById("loadBtn");
 
+const homeView = document.getElementById("homeView");
+const daysSinceView = document.getElementById("daysSinceView");
+const openDaysSinceBtn = document.getElementById("openDaysSinceBtn");
+const backHomeBtn = document.getElementById("backHomeBtn");
+const sinceDateEl = document.getElementById("sinceDate");
+const saveDateBtn = document.getElementById("saveDateBtn");
+const calcDaysBtn = document.getElementById("calcDaysBtn");
+const daysResultEl = document.getElementById("daysResult");
+
 let tokenClient = null;
 let accessToken = null;
 
@@ -22,9 +31,12 @@ function log(msg) {
 }
 
 function loadClientId() {
-  const saved = localStorage.getItem("google_client_id") || "";
-  clientIdEl.value = saved;
-  return saved;
+  const saved = localStorage.getItem("google_client_id");
+  if (saved && saved.trim()) {
+    clientIdEl.value = saved.trim();
+    return saved.trim();
+  }
+  return clientIdEl.value.trim();
 }
 
 function saveClientId() {
@@ -80,9 +92,9 @@ function ensureAuth() {
   if (!tokenClient) throw new Error("Google API non initialisée.");
 }
 
-async function requestLogin() {
+async function requestLogin(prompt = "consent") {
   ensureAuth();
-  tokenClient.requestAccessToken({ prompt: "consent" });
+  tokenClient.requestAccessToken({ prompt });
 }
 
 function logout() {
@@ -185,15 +197,77 @@ async function loadData() {
   log(`Entrée "${key}" chargée (maj: ${current[key].updatedAt || "n/a"}).`);
 }
 
+function showView(viewName) {
+  if (viewName === "home") {
+    homeView.classList.remove("hidden");
+    daysSinceView.classList.add("hidden");
+  } else if (viewName === "daysSince") {
+    homeView.classList.add("hidden");
+    daysSinceView.classList.remove("hidden");
+  }
+}
+
+function formatDaysLabel(days) {
+  return `${days} ${days > 1 ? "jours" : "jour"}`;
+}
+
+function calculateDaysSince(dateStr) {
+  if (!dateStr) return null;
+  const start = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(start.getTime())) return null;
+  const now = new Date();
+  const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+  const nowUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor((nowUtc - startUtc) / 86400000);
+}
+
+function renderDaysSince() {
+  const dateStr = sinceDateEl.value;
+  const days = calculateDaysSince(dateStr);
+  if (days === null) {
+    daysResultEl.textContent = "Date invalide";
+    return;
+  }
+  if (days < 0) {
+    daysResultEl.textContent = `La date est dans ${Math.abs(days)} ${Math.abs(days) > 1 ? "jours" : "jour"}`;
+    return;
+  }
+  daysResultEl.textContent = formatDaysLabel(days);
+}
+
+function loadDaysSinceFromLocal() {
+  const savedDate = localStorage.getItem("days_since_date");
+  if (savedDate) {
+    sinceDateEl.value = savedDate;
+  } else {
+    const today = new Date().toISOString().slice(0, 10);
+    sinceDateEl.value = today;
+  }
+  renderDaysSince();
+}
+
+function saveDaysSinceToLocal() {
+  const v = sinceDateEl.value;
+  if (!v) {
+    log("Date requise pour la sous-app.");
+    return;
+  }
+  localStorage.setItem("days_since_date", v);
+  renderDaysSince();
+  log("Date sauvegardée en local pour la sous-app.");
+}
+
 async function bootstrap() {
   loadClientId();
+  loadDaysSinceFromLocal();
+  showView("home");
 
   saveConfigBtn.addEventListener("click", saveClientId);
 
   loginBtn.addEventListener("click", async () => {
     try {
       if (!tokenClient) await initGoogleApis();
-      await requestLogin();
+      await requestLogin("consent");
     } catch (e) {
       log(`Init/login erreur: ${e.message}`);
     }
@@ -223,6 +297,12 @@ async function bootstrap() {
     }
   });
 
+  openDaysSinceBtn.addEventListener("click", () => showView("daysSince"));
+  backHomeBtn.addEventListener("click", () => showView("home"));
+  saveDateBtn.addEventListener("click", saveDaysSinceToLocal);
+  calcDaysBtn.addEventListener("click", renderDaysSince);
+  sinceDateEl.addEventListener("change", renderDaysSince);
+
   if ("serviceWorker" in navigator) {
     try {
       await navigator.serviceWorker.register("./sw.js");
@@ -230,6 +310,18 @@ async function bootstrap() {
     } catch (e) {
       log(`SW erreur: ${e.message}`);
     }
+  }
+
+  try {
+    await initGoogleApis();
+    try {
+      await requestLogin("");
+      log("Tentative de connexion Google automatique.");
+    } catch {
+      log("Connexion auto non disponible, action manuelle possible.");
+    }
+  } catch (e) {
+    log(`Init auto Google erreur: ${e.message}`);
   }
 }
 
