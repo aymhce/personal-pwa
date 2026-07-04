@@ -32,8 +32,32 @@ const daysResultEl = document.getElementById("daysResult");
 let tokenClient = null;
 let accessToken = null;
 
+function normalizeError(err) {
+  if (!err) return "Erreur inconnue";
+  if (typeof err === "string") return err;
+
+  if (err.result?.error) {
+    const apiErr = err.result.error;
+    const details = [];
+    if (apiErr.code) details.push(`code=${apiErr.code}`);
+    if (apiErr.status) details.push(`status=${apiErr.status}`);
+    if (apiErr.message) details.push(`message=${apiErr.message}`);
+    return details.length ? details.join(" | ") : JSON.stringify(apiErr);
+  }
+
+  if (err.error && typeof err.error === "string") return err.error;
+  if (err.message) return err.message;
+
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return "Erreur non sérialisable";
+  }
+}
+
 function log(msg) {
-  const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  const safeMsg = msg == null ? "Message vide" : String(msg);
+  const line = `[${new Date().toLocaleTimeString()}] ${safeMsg}`;
   logEl.textContent = `${line}\n${logEl.textContent}`.trim();
 }
 
@@ -85,7 +109,7 @@ async function initGoogleApis() {
     scope: SCOPES,
     callback: async (resp) => {
       if (resp.error) {
-        log(`Erreur OAuth: ${resp.error}`);
+        log(`Erreur OAuth: ${normalizeError(resp)}`);
         return;
       }
       accessToken = resp.access_token;
@@ -94,7 +118,7 @@ async function initGoogleApis() {
       try {
         await syncDaysSinceFromDrive();
       } catch (e) {
-        log(`Sync date (post-login) erreur: ${e.message}`);
+        log(`Sync date (post-login) erreur: ${normalizeError(e)}`);
       }
     }
   });
@@ -122,7 +146,17 @@ function isAuthenticated() {
   return Boolean(accessToken);
 }
 
+function ensureDriveReady() {
+  if (!window.gapi?.client?.drive) {
+    throw new Error("API Drive non initialisée. Vérifie l'initialisation Google.");
+  }
+  if (!isAuthenticated()) {
+    throw new Error("Utilisateur non authentifié Google.");
+  }
+}
+
 async function findAppFile() {
+  ensureDriveReady();
   const res = await gapi.client.drive.files.list({
     spaces: "appDataFolder",
     q: `name='${APP_FILE_NAME}' and trashed=false`,
@@ -133,12 +167,19 @@ async function findAppFile() {
 }
 
 async function uploadAppData(jsonObject) {
+  ensureDriveReady();
   const existing = await findAppFile();
-  const metadata = {
-    name: APP_FILE_NAME,
-    parents: ["appDataFolder"],
-    mimeType: "application/json"
-  };
+
+  const metadata = existing
+    ? {
+        name: APP_FILE_NAME,
+        mimeType: "application/json"
+      }
+    : {
+        name: APP_FILE_NAME,
+        parents: ["appDataFolder"],
+        mimeType: "application/json"
+      };
 
   const boundary = "-------314159265358979323846";
   const delimiter = `\r\n--${boundary}\r\n`;
@@ -170,6 +211,7 @@ async function uploadAppData(jsonObject) {
 }
 
 async function downloadAppData() {
+  ensureDriveReady();
   const existing = await findAppFile();
   if (!existing) return null;
   const res = await gapi.client.drive.files.get({
@@ -291,7 +333,7 @@ async function saveDaysSince() {
     await uploadAppData(current);
     log("Date sauvegardée en local + Drive.");
   } catch (e) {
-    log(`Sauvegarde date Drive erreur: ${e.message}`);
+    log(`Sauvegarde date Drive erreur: ${normalizeError(e)}`);
   }
 }
 
@@ -332,7 +374,7 @@ async function bootstrap() {
       if (!tokenClient) await initGoogleApis();
       requestLogin("consent");
     } catch (e) {
-      log(`Init/login erreur: ${e.message}`);
+      log(`Init/login erreur: ${normalizeError(e)}`);
     }
   });
 
@@ -340,7 +382,7 @@ async function bootstrap() {
     try {
       logout();
     } catch (e) {
-      log(`Logout erreur: ${e.message}`);
+      log(`Logout erreur: ${normalizeError(e)}`);
     }
   });
 
@@ -348,7 +390,7 @@ async function bootstrap() {
     try {
       await saveData();
     } catch (e) {
-      log(`Sauvegarde erreur: ${e.message}`);
+      log(`Sauvegarde erreur: ${normalizeError(e)}`);
     }
   });
 
@@ -356,7 +398,7 @@ async function bootstrap() {
     try {
       await loadData();
     } catch (e) {
-      log(`Chargement erreur: ${e.message}`);
+      log(`Chargement erreur: ${normalizeError(e)}`);
     }
   });
 
@@ -378,7 +420,7 @@ async function bootstrap() {
       await navigator.serviceWorker.ready;
       log(`Service worker enregistré (build ${APP_VERSION}).`);
     } catch (e) {
-      log(`SW erreur: ${e.message}`);
+      log(`SW erreur: ${normalizeError(e)}`);
     }
   }
 
@@ -387,7 +429,7 @@ async function bootstrap() {
     requestLogin("");
     log("Connexion Google automatique déclenchée.");
   } catch (e) {
-    log(`Init auto Google erreur: ${e.message}`);
+    log(`Init auto Google erreur: ${normalizeError(e)}`);
   }
 }
 
