@@ -2,6 +2,7 @@ const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 const SCOPES = "https://www.googleapis.com/auth/drive.appdata";
 const APP_FILE_NAME = "daily-data.json";
 const DAYS_SINCE_KEY = "days_since_date";
+const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
 const logEl = document.getElementById("log");
 const clientIdEl = document.getElementById("clientId");
@@ -372,8 +373,10 @@ async function bootstrap() {
 
   if ("serviceWorker" in navigator) {
     try {
-      await navigator.serviceWorker.register("./sw.js");
-      log("Service worker enregistré.");
+      const swUrl = `./sw.js?v=${encodeURIComponent(APP_VERSION)}`;
+      await navigator.serviceWorker.register(swUrl, { updateViaCache: "none" });
+      await navigator.serviceWorker.ready;
+      log(`Service worker enregistré (build ${APP_VERSION}).`);
     } catch (e) {
       log(`SW erreur: ${e.message}`);
     }
