@@ -15,8 +15,13 @@ const loadBtn = document.getElementById("loadBtn");
 
 const homeView = document.getElementById("homeView");
 const daysSinceView = document.getElementById("daysSinceView");
+const techView = document.getElementById("techView");
+
 const openDaysSinceBtn = document.getElementById("openDaysSinceBtn");
-const backHomeBtn = document.getElementById("backHomeBtn");
+const openTechBtn = document.getElementById("openTechBtn");
+const backHomeFromDaysBtn = document.getElementById("backHomeFromDaysBtn");
+const backHomeFromTechBtn = document.getElementById("backHomeFromTechBtn");
+
 const sinceDateEl = document.getElementById("sinceDate");
 const saveDateBtn = document.getElementById("saveDateBtn");
 const calcDaysBtn = document.getElementById("calcDaysBtn");
@@ -92,7 +97,7 @@ function ensureAuth() {
   if (!tokenClient) throw new Error("Google API non initialisée.");
 }
 
-async function requestLogin(prompt = "consent") {
+function requestLogin(prompt = "consent") {
   ensureAuth();
   tokenClient.requestAccessToken({ prompt });
 }
@@ -198,13 +203,13 @@ async function loadData() {
 }
 
 function showView(viewName) {
-  if (viewName === "home") {
-    homeView.classList.remove("hidden");
-    daysSinceView.classList.add("hidden");
-  } else if (viewName === "daysSince") {
-    homeView.classList.add("hidden");
-    daysSinceView.classList.remove("hidden");
-  }
+  homeView.classList.add("hidden");
+  daysSinceView.classList.add("hidden");
+  techView.classList.add("hidden");
+
+  if (viewName === "home") homeView.classList.remove("hidden");
+  if (viewName === "daysSince") daysSinceView.classList.remove("hidden");
+  if (viewName === "tech") techView.classList.remove("hidden");
 }
 
 function formatDaysLabel(days) {
@@ -267,7 +272,7 @@ async function bootstrap() {
   loginBtn.addEventListener("click", async () => {
     try {
       if (!tokenClient) await initGoogleApis();
-      await requestLogin("consent");
+      requestLogin("consent");
     } catch (e) {
       log(`Init/login erreur: ${e.message}`);
     }
@@ -298,7 +303,10 @@ async function bootstrap() {
   });
 
   openDaysSinceBtn.addEventListener("click", () => showView("daysSince"));
-  backHomeBtn.addEventListener("click", () => showView("home"));
+  openTechBtn.addEventListener("click", () => showView("tech"));
+  backHomeFromDaysBtn.addEventListener("click", () => showView("home"));
+  backHomeFromTechBtn.addEventListener("click", () => showView("home"));
+
   saveDateBtn.addEventListener("click", saveDaysSinceToLocal);
   calcDaysBtn.addEventListener("click", renderDaysSince);
   sinceDateEl.addEventListener("change", renderDaysSince);
@@ -314,12 +322,8 @@ async function bootstrap() {
 
   try {
     await initGoogleApis();
-    try {
-      await requestLogin("");
-      log("Tentative de connexion Google automatique.");
-    } catch {
-      log("Connexion auto non disponible, action manuelle possible.");
-    }
+    requestLogin("");
+    log("Connexion Google automatique déclenchée.");
   } catch (e) {
     log(`Init auto Google erreur: ${e.message}`);
   }
