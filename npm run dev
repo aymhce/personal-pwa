@@ -1,0 +1,20 @@
+
+Ouvrir l’URL locale, coller le Client ID dans l’app, cliquer "Se connecter à Google".
+
+## 3) Déploiement GitHub Pages (CI)
+
+Le workflow ci-dessous build et publie automatiquement sur GitHub Pages.
+
+## 4) Stockage
+
+L’app écrit dans `daily-data.json` en `appDataFolder` :
+- privé à ton application
+- invisible dans “Mon Drive” standard
+- quota Drive gratuit (15 Go partagé Google)
+
+## 5) Évolutions conseillées
+
+- chiffrement local des données avant upload
+- gestion de conflits (multi-appareils)
+- segmentation par fichiers (au lieu d’un JSON unique)
+- ajout d’un mode offline-first plus avancé

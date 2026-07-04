@@ -1,0 +1,16 @@
+{
+  "name": "drive-pwa-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Base PWA personnelle avec stockage Google Drive (appDataFolder)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "lint": "echo \"No lint configured\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

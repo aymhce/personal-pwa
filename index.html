@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon-192.png" />
+    <title>Drive PWA Starter</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .app {
+        max-width: 720px;
+        margin: 0 auto;
+        min-height: 100dvh;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 12px;
+      }
+      input, textarea, button {
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        background: #0b1220;
+        color: #e2e8f0;
+        padding: 10px 12px;
+        font-size: 16px;
+      }
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+      button {
+        cursor: pointer;
+        background: #1d4ed8;
+        border: none;
+        font-weight: 600;
+      }
+      button.secondary {
+        background: #334155;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      .muted {
+        color: #94a3b8;
+        font-size: 14px;
+      }
+      code {
+        font-size: 12px;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <h1>Ma PWA Drive</h1>
+
+      <section class="card">
+        <h2>Configuration OAuth Google</h2>
+        <p class="muted">
+          Renseigne ton Client ID OAuth Web (Google Cloud Console).
+        </p>
+        <input id="clientId" placeholder="Google OAuth Client ID" />
+        <div class="row">
+          <button id="saveConfig" class="secondary">Sauver config locale</button>
+          <button id="loginBtn">Se connecter à Google</button>
+        </div>
+        <button id="logoutBtn" class="secondary">Se déconnecter</button>
+        <p class="muted">Scope utilisé: <code>https://www.googleapis.com/auth/drive.appdata</code></p>
+      </section>
+
+      <section class="card">
+        <h2>Données quotidiennes</h2>
+        <p class="muted">Stockage dans un fichier JSON sur Google Drive (appDataFolder).</p>
+        <input id="title" placeholder="Titre / clé (ex: journal-2026-07-04)" />
+        <textarea id="content" placeholder="Ton contenu..."></textarea>
+        <div class="row">
+          <button id="saveBtn">Sauvegarder sur Drive</button>
+          <button id="loadBtn" class="secondary">Charger depuis Drive</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Logs</h2>
+        <pre id="log" class="muted"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
