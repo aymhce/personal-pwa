@@ -26,7 +26,27 @@ function isDriveReady() {
   return driveReady;
 }
 
+async function loadTemplate(path) {
+  const res = await fetch(path, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Impossible de charger le template: ${path} (${res.status})`);
+  }
+  return await res.text();
+}
+
+async function mountTemplates() {
+  const root = document.getElementById("app-root");
+  const [home, days, tech] = await Promise.all([
+    loadTemplate("./src/templates/home.html"),
+    loadTemplate("./src/templates/days-since.html"),
+    loadTemplate("./src/templates/tech.html")
+  ]);
+  root.innerHTML = `${home}\n${days}\n${tech}`;
+}
+
 async function bootstrap() {
+  await mountTemplates();
+
   initLogger(document.getElementById("log"));
 
   const clientIdEl = document.getElementById("clientId");
