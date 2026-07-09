@@ -17,10 +17,6 @@ import {
 } from "./apps/days-since.js";
 import { initTechApp } from "./apps/tech.js";
 
-import homeTemplate from "./templates/home.html?raw";
-import daysSinceTemplate from "./templates/days-since.html?raw";
-import techTemplate from "./templates/tech.html?raw";
-
 const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
 let auth = null;
@@ -30,14 +26,7 @@ function isDriveReady() {
   return driveReady;
 }
 
-async function mountTemplates() {
-  const root = document.getElementById("app-root");
-  root.innerHTML = `${homeTemplate}\n${daysSinceTemplate}\n${techTemplate}`;
-}
-
 async function bootstrap() {
-  await mountTemplates();
-
   initLogger(document.getElementById("log"));
 
   const clientIdEl = document.getElementById("clientId");
