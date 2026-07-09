@@ -2,14 +2,11 @@ import { defineConfig } from "vite";
 
 const buildVersion = String(Date.now());
 
-// Nom du repo GitHub pour Pages : https://<user>.github.io/<repo>/
-const repoName = "aymhce.github.io";
-
-export default defineConfig(({ command }) => ({
-  // En dev local, base relative pratique.
-  // En build GitHub Pages, on force la base absolue du repo.
-  base: command === "build" ? `/${repoName}/` : "./",
+export default defineConfig({
+  // Important pour GitHub Pages (user site ET project site)
+  // et pour éviter les 404 + MIME text/html sur les modules.
+  base: "./",
   define: {
     __APP_VERSION__: JSON.stringify(buildVersion)
   }
-}));
+});
