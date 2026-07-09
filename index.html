@@ -2,103 +2,11 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f172a" />
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./icons/icon-192.png" />
-    <title>Drive PWA Starter</title>
-    <style>
-      :root {
-        color-scheme: dark;
-      }
-      body {
-        margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        background: #0f172a;
-        color: #e2e8f0;
-      }
-      .app {
-        max-width: 860px;
-        margin: 0 auto;
-        min-height: 100dvh;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .card {
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 12px;
-        padding: 12px;
-      }
-      input, textarea, button {
-        width: 100%;
-        box-sizing: border-box;
-        border-radius: 10px;
-        border: 1px solid #334155;
-        background: #0b1220;
-        color: #e2e8f0;
-        padding: 10px 12px;
-        font-size: 16px;
-      }
-      textarea {
-        min-height: 120px;
-        resize: vertical;
-      }
-      button {
-        cursor: pointer;
-        background: #1d4ed8;
-        border: none;
-        font-weight: 600;
-      }
-      button.secondary {
-        background: #334155;
-      }
-      .row {
-        display: flex;
-        gap: 10px;
-      }
-      .muted {
-        color: #94a3b8;
-        font-size: 14px;
-      }
-      code {
-        font-size: 12px;
-        word-break: break-all;
-      }
-      .hidden {
-        display: none !important;
-      }
-      .tiles {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 10px;
-      }
-      .tile {
-        border: 1px solid #334155;
-        background: #0b1220;
-        border-radius: 12px;
-        padding: 12px;
-        text-align: left;
-      }
-      .tile h3 {
-        margin: 0 0 8px 0;
-        font-size: 18px;
-      }
-      .result {
-        font-size: 24px;
-        font-weight: 700;
-        margin-top: 8px;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ma PWA Drive</title>
   </head>
   <body>
-    <main class="app">
-      <h1>Ma PWA Drive</h1>
-      <div id="app-root"></div>
-    </main>
-
-    <script type="module" src="./src/main.js"></script>
+    <div id="app-root"></div>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
