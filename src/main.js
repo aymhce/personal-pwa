@@ -17,6 +17,10 @@ import {
 } from "./apps/days-since.js";
 import { initTechApp } from "./apps/tech.js";
 
+import homeTemplate from "./templates/home.html?raw";
+import daysSinceTemplate from "./templates/days-since.html?raw";
+import techTemplate from "./templates/tech.html?raw";
+
 const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
 let auth = null;
@@ -26,22 +30,9 @@ function isDriveReady() {
   return driveReady;
 }
 
-async function loadTemplate(path) {
-  const res = await fetch(path, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Impossible de charger le template: ${path} (${res.status})`);
-  }
-  return await res.text();
-}
-
 async function mountTemplates() {
   const root = document.getElementById("app-root");
-  const [home, days, tech] = await Promise.all([
-    loadTemplate("./src/templates/home.html"),
-    loadTemplate("./src/templates/days-since.html"),
-    loadTemplate("./src/templates/tech.html")
-  ]);
-  root.innerHTML = `${home}\n${days}\n${tech}`;
+  root.innerHTML = `${homeTemplate}\n${daysSinceTemplate}\n${techTemplate}`;
 }
 
 async function bootstrap() {
